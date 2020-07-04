@@ -36,6 +36,7 @@ function insertItemDOM(product) {
   );
 
   addCartFooter();
+  saveCart();
 }
 
 
@@ -68,7 +69,7 @@ function clearCart(){
 
   cart = [];
   // 本地存储为空
-  localStorage.removeItem('cart');
+  saveCart();
 
   document.querySelector('.cart-footer').remove();
 
@@ -80,8 +81,10 @@ function clearCart(){
   });
 }
 
+//支付
 function checkOut(){
-
+    alert("支付成功！！");
+    clearCart();
 }
 
 //添加
@@ -96,7 +99,7 @@ function inceraseItem(product,cartItemDOM){
       .classList.remove('btn-danger');
 
        //添加本地存储
-       localStorage.setItem('cart',JSON.stringify(cart));
+       saveCart();
     }
   });
 }
@@ -121,7 +124,7 @@ function decreaseItem(product,cartItemDOM,
       }
 
         //添加本地存储
-        localStorage.setItem('cart',JSON.stringify(cart));
+        saveCart();
 
       if (cartItem.quantity === 1) {
         cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
@@ -146,7 +149,7 @@ function deleteItem(product,cartItemDOM,addToButtonDOM){
         cartItem => cartItem.name !== product.name);
 
         //添加本地存储
-        localStorage.setItem('cart',JSON.stringify(cart));
+        saveCart();
 
 
         addToButtonDOM.innerText = '加入购物车';
@@ -242,9 +245,24 @@ addToButtonsDOM.forEach(addToButtonDOM => {
     cart.push(product);
 
     //添加本地存储
-    localStorage.setItem('cart',JSON.stringify(cart));
+    saveCart();
     }
 
     headleActionButtons(addToButtonDOM,product);
 });
 });
+
+//计算商品总价
+function saveCart() {
+  localStorage.setItem('cart',JSON.stringify(cart));
+  countCarTotal();
+}
+
+function countCarTotal() {
+  let cartTotal = 0;
+  cart.forEach(cartItem => (cartTotal += cartItem.quantity *
+    cartItem.price));
+    document.querySelector(
+      '[data-action = "CHECKOUT"]'
+    ).innerText = `支付 ¥${cartTotal}`;
+}
