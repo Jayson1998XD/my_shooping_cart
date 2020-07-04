@@ -1,12 +1,140 @@
+'use strict'
 
-let cart = [];
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 const cartDOM = document.querySelector('.cart');
 
 const addToButtonsDOM = document.querySelectorAll(
   '[data-action="ADD_TO_CART"]'
 );
 
-// console.log(addToButtonsDOM);
+
+//localstorage缓存
+if(cart.length>0){
+  cart.forEach(cartItem =>{
+    const product = cartItem;
+    cartDOM.insertAdjacentHTML("beforeend",`
+      <div class="cart-item">
+       <img class="cart-item-image"
+        src="${product.image}"
+        alt="${product.name}">
+      <h3 class="cart-item-name">${product.name}</h3>
+       <h3 class="cart-item-price">${product.price}</h3>
+       <button class="btn btn-primary ${
+         product.quantity ===1 ? 'btn-danger' : ''
+       } btn-small" 
+       data-action="DECREASE_ITEM">
+        &minus;
+        </button>
+        <h3 class="cart-item-quantity">${product.quantity}</h3>
+        <button class="btn btn-primary btn-small"
+         data-action="INCREASE_ITEM">
+            &plus;
+        </button>
+        <h3 class="cart-item-quantity">1</h3>
+        <button class="btn btn-primary btn-danger btn-small"
+         data-action="REMOVE_ITEM">
+            &times;
+        </button>      
+       </div>
+      `
+      );
+
+      addToButtonsDOM.forEach(addToButtonDOM => {
+        const productDOM = addToButtonDOM.parentNode;
+        //判断
+        if(productDOM.querySelector(".product-name").innerText
+        === product.name) {
+          addToButtonDOM.innerText='已加入';
+          addToButtonDOM.disabled= true;
+    //拿到商品容器
+    const cartItemsDOM = cartDOM.querySelectorAll(".cart-item");
+    cartItemsDOM.forEach(cartItemDOM => {
+      if (
+        cartItemDOM.querySelector(".cart-item-name").
+         innerHTML === product.name
+       ) {
+
+        //加号按钮
+        cartItemDOM
+        .querySelector('[data-action="INCREASE_ITEM"]')
+        .addEventListener("click", () => {
+          cart.forEach(cartItem => {
+            if (cartItem.name === product.name) {
+              cartItemDOM.querySelector('.cart-item-quantity')
+              .innerText = ++cartItem.quantity;
+
+              cartItemDOM.
+              querySelector('[data-action="DECREASE_ITEM"]')
+              .classList.remove('btn-danger');
+
+               //添加本地存储
+               localStorage.setItem('cart',JSON.stringify(cart));
+            }
+          });
+        });
+
+    
+
+        //减号按钮
+        cartItemDOM.
+        querySelector('[data-action="DECREASE_ITEM"]')
+        .addEventListener("click", () => {
+          cart.forEach(cartItem => {
+            if (cartItem.name === product.name) {
+              if (cartItem.quantity > 1) {
+                cartItemDOM.querySelector('.cart-item-quantity')
+                .innerText = --cartItem.quantity;
+              } else {
+                cartItemDOM.classList.add('cart-item-remove');
+                //删除dom元素
+                  setTimeout(() => cartItemDOM.remove(), 300);
+                //删除数组里的元素
+                cart = cart.filter(
+                  cartItem => cartItem.name !== product.name
+                  );
+                  addToButtonDOM.innerText = '加入购物车';
+                  addToButtonDOM.disabled = false;
+              }
+
+              if (cartItem.quantity === 1) {
+                cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
+                .classList.add('btn-danger');
+              }
+                //添加本地存储
+                localStorage.setItem('cart',JSON.stringify(cart));
+            }
+          })
+        })
+
+        //删除按钮
+        cartItemDOM.
+        querySelector('[data-action="REMOVE_ITEM"]')
+        .addEventListener("click", () => {
+          cart.forEach(cartItem => {
+            if (cartItem.name === product.name) {
+                cartItemDOM.classList.add('cart-item-remove');
+                //删除dom元素
+                  setTimeout(() => cartItemDOM.remove(), 300);
+                //删除数组里的元素
+                cart = cart.filter(
+                cartItem => cartItem.name !== product.name);
+
+                //添加本地存储
+                localStorage.setItem('cart',JSON.stringify(cart));
+
+
+                addToButtonDOM.innerText = '加入购物车';
+                addToButtonDOM.disabled = false;
+            }
+          })
+        })
+      }
+    });
+        }
+      })
+
+  });
+}
 
 //遍历添加事件
 addToButtonsDOM.forEach(addToButtonDOM => {
@@ -58,6 +186,10 @@ addToButtonsDOM.forEach(addToButtonDOM => {
     //将商品加入购物车
     cart.push(product);
 
+    //添加本地存储
+    localStorage.setItem('cart',JSON.stringify(cart));
+
+
     addToButtonDOM.innerText='已加入';
     addToButtonDOM.disabled= true;
 
@@ -81,9 +213,14 @@ addToButtonsDOM.forEach(addToButtonDOM => {
               cartItemDOM.
               querySelector('[data-action="DECREASE_ITEM"]')
               .classList.remove('btn-danger');
+
+               //添加本地存储
+               localStorage.setItem('cart',JSON.stringify(cart));
             }
           });
         });
+
+    
 
         //减号按钮
         cartItemDOM.
@@ -110,6 +247,8 @@ addToButtonsDOM.forEach(addToButtonDOM => {
                 cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
                 .classList.add('btn-danger');
               }
+                //添加本地存储
+                localStorage.setItem('cart',JSON.stringify(cart));
             }
           })
         })
@@ -125,13 +264,18 @@ addToButtonsDOM.forEach(addToButtonDOM => {
                   setTimeout(() => cartItemDOM.remove(), 300);
                 //删除数组里的元素
                 cart = cart.filter(
-                  cartItem => cartItem.name !== product.name);
-                  addToButtonDOM.innerText = '加入购物车';
-                  addToButtonDOM.disabled = false;
+                cartItem => cartItem.name !== product.name);
+
+                //添加本地存储
+                localStorage.setItem('cart',JSON.stringify(cart));
+
+
+                addToButtonDOM.innerText = '加入购物车';
+                addToButtonDOM.disabled = false;
             }
           })
         })
       }
-    })
+    });
   });
 });
