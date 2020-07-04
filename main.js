@@ -2,7 +2,6 @@
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 const cartDOM = document.querySelector('.cart');
-
 const addToButtonsDOM = document.querySelectorAll(
   '[data-action="ADD_TO_CART"]'
 );
@@ -35,8 +34,57 @@ function insertItemDOM(product) {
    </div>
   `
   );
+
+  addCartFooter();
 }
 
+
+
+function addCartFooter(){
+  if(document.querySelector('.cart-footer') === null){
+    cartDOM.insertAdjacentHTML("afterend",`
+    <div class="cart-footer">
+    <button class="btn btn-danger" data-action="CLEAR_CART">
+    清空购物车</button>
+    <button class="btn btn-primary" data-action="CHECKOUT">
+    支付</button> 
+    `
+    );
+
+  document.querySelector('[data-action="CLEAR_CART"]')
+  .addEventListener("click", () => clearCart());
+
+  document.querySelector('[data-action="CHECKOUT"]')
+  .addEventListener("click", () => checkOut());
+
+   }
+}
+
+function clearCart(){
+  cartDOM.querySelectorAll(".cart-item").forEach(cartItemDOM => {
+    cartItemDOM.classList.add('cart-item-remove');
+    setTimeout(() => cartItemDOM.remove(),250);
+  });
+
+  cart = [];
+  // 本地存储为空
+  localStorage.removeItem('cart');
+
+  document.querySelector('.cart-footer').remove();
+
+  
+
+  addToButtonsDOM.forEach(addToButtonsDOM => {
+    addToButtonsDOM.innerText = '加入购物车';
+    addToButtonsDOM.disabled = false;
+  });
+}
+
+function checkOut(){
+
+}
+
+//添加
 function inceraseItem(product,cartItemDOM){
   cart.forEach(cartItem => {
     if (cartItem.name === product.name) {
@@ -52,7 +100,7 @@ function inceraseItem(product,cartItemDOM){
     }
   });
 }
-
+//减少
 function decreaseItem(product,cartItemDOM,
   addToButtonDOM){
   cart.forEach(cartItem => {
@@ -79,13 +127,17 @@ function decreaseItem(product,cartItemDOM,
         cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
         .classList.add('btn-danger');
       }
+
+      //反馈footer
+      if(cart.length < 1 ) {
+        document.querySelector('.cart-footer').remove();
+      }
 }
   })
 }
-
+//删除
 function deleteItem(product,cartItemDOM,addToButtonDOM){
-  cart.forEach(cartItem => {
-    if (cartItem.name === product.name) {
+  
         cartItemDOM.classList.add('cart-item-remove');
         //删除dom元素
           setTimeout(() => cartItemDOM.remove(), 300);
@@ -99,8 +151,12 @@ function deleteItem(product,cartItemDOM,addToButtonDOM){
 
         addToButtonDOM.innerText = '加入购物车';
         addToButtonDOM.disabled = false;
-    }
-  })
+
+        //反馈footer
+        if(cart.length < 1 ) {
+          document.querySelector('.cart-footer').remove();
+        }
+
 }
 
 function headleActionButtons(addToButtonDOM,product){
