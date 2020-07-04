@@ -8,130 +8,153 @@ const addToButtonsDOM = document.querySelectorAll(
 );
 
 
-//localstorage缓存
+function insertItemDOM(product) {
+  cartDOM.insertAdjacentHTML("beforeend",`
+  <div class="cart-item">
+   <img class="cart-item-image"
+    src="${product.image}"
+    alt="${product.name}">
+  <h3 class="cart-item-name">${product.name}</h3>
+   <h3 class="cart-item-price">${product.price}</h3>
+   <button class="btn btn-primary ${
+     product.quantity ===1 ? 'btn-danger' : ''
+   } btn-small" 
+   data-action="DECREASE_ITEM">
+    &minus;
+    </button>
+    <h3 class="cart-item-quantity">${product.quantity}</h3>
+    <button class="btn btn-primary btn-small"
+     data-action="INCREASE_ITEM">
+        &plus;
+    </button>
+    <h3 class="cart-item-quantity">1</h3>
+    <button class="btn btn-primary btn-danger btn-small"
+     data-action="REMOVE_ITEM">
+        &times;
+    </button>      
+   </div>
+  `
+  );
+}
+
+function inceraseItem(product,cartItemDOM){
+  cart.forEach(cartItem => {
+    if (cartItem.name === product.name) {
+      cartItemDOM.querySelector('.cart-item-quantity')
+      .innerText = ++cartItem.quantity;
+
+      cartItemDOM.
+      querySelector('[data-action="DECREASE_ITEM"]')
+      .classList.remove('btn-danger');
+
+       //添加本地存储
+       localStorage.setItem('cart',JSON.stringify(cart));
+    }
+  });
+}
+
+function decreaseItem(product,cartItemDOM,
+  addToButtonDOM){
+  cart.forEach(cartItem => {
+    if (cartItem.name === product.name) {
+      if (cartItem.quantity > 1) {
+        cartItemDOM.querySelector('.cart-item-quantity')
+        .innerText = --cartItem.quantity;
+      } else {
+        cartItemDOM.classList.add('cart-item-remove');
+        //删除dom元素
+          setTimeout(() => cartItemDOM.remove(), 300);
+        //删除数组里的元素
+        cart = cart.filter(
+          cartItem => cartItem.name !== product.name
+          );
+          addToButtonDOM.innerText = '加入购物车';
+          addToButtonDOM.disabled = false;
+      }
+
+        //添加本地存储
+        localStorage.setItem('cart',JSON.stringify(cart));
+
+      if (cartItem.quantity === 1) {
+        cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
+        .classList.add('btn-danger');
+      }
+}
+  })
+}
+
+function deleteItem(product,cartItemDOM,addToButtonDOM){
+  cart.forEach(cartItem => {
+    if (cartItem.name === product.name) {
+        cartItemDOM.classList.add('cart-item-remove');
+        //删除dom元素
+          setTimeout(() => cartItemDOM.remove(), 300);
+        //删除数组里的元素
+        cart = cart.filter(
+        cartItem => cartItem.name !== product.name);
+
+        //添加本地存储
+        localStorage.setItem('cart',JSON.stringify(cart));
+
+
+        addToButtonDOM.innerText = '加入购物车';
+        addToButtonDOM.disabled = false;
+    }
+  })
+}
+
+function headleActionButtons(addToButtonDOM,product){
+  addToButtonDOM.innerText='已加入';
+  addToButtonDOM.disabled= true;
+//拿到商品容器
+const cartItemsDOM = cartDOM.querySelectorAll(".cart-item");
+cartItemsDOM.forEach(cartItemDOM => {
+if (
+cartItemDOM.querySelector(".cart-item-name").
+ innerHTML === product.name
+) {
+
+//加号按钮
+cartItemDOM
+.querySelector('[data-action="INCREASE_ITEM"]')
+.addEventListener("click", () => {
+  inceraseItem(product,cartItemDOM);
+});
+
+
+
+//减号按钮
+cartItemDOM.
+querySelector('[data-action="DECREASE_ITEM"]')
+.addEventListener("click", () => {
+  decreaseItem(product,cartItemDOM,addToButtonDOM);
+});
+
+//删除按钮
+cartItemDOM.
+querySelector('[data-action="REMOVE_ITEM"]')
+.addEventListener("click", () => {
+  deleteItem(product,cartItemDOM,addToButtonDOM);
+});
+}
+
+});
+}
+
+//如果购物车有内容，就继续展示
 if(cart.length>0){
   cart.forEach(cartItem =>{
     const product = cartItem;
-    cartDOM.insertAdjacentHTML("beforeend",`
-      <div class="cart-item">
-       <img class="cart-item-image"
-        src="${product.image}"
-        alt="${product.name}">
-      <h3 class="cart-item-name">${product.name}</h3>
-       <h3 class="cart-item-price">${product.price}</h3>
-       <button class="btn btn-primary ${
-         product.quantity ===1 ? 'btn-danger' : ''
-       } btn-small" 
-       data-action="DECREASE_ITEM">
-        &minus;
-        </button>
-        <h3 class="cart-item-quantity">${product.quantity}</h3>
-        <button class="btn btn-primary btn-small"
-         data-action="INCREASE_ITEM">
-            &plus;
-        </button>
-        <h3 class="cart-item-quantity">1</h3>
-        <button class="btn btn-primary btn-danger btn-small"
-         data-action="REMOVE_ITEM">
-            &times;
-        </button>      
-       </div>
-      `
-      );
+    insertItemDOM(product);
 
       addToButtonsDOM.forEach(addToButtonDOM => {
         const productDOM = addToButtonDOM.parentNode;
-        //判断
+        //判断购物车中是否存在商品
         if(productDOM.querySelector(".product-name").innerText
         === product.name) {
-          addToButtonDOM.innerText='已加入';
-          addToButtonDOM.disabled= true;
-    //拿到商品容器
-    const cartItemsDOM = cartDOM.querySelectorAll(".cart-item");
-    cartItemsDOM.forEach(cartItemDOM => {
-      if (
-        cartItemDOM.querySelector(".cart-item-name").
-         innerHTML === product.name
-       ) {
-
-        //加号按钮
-        cartItemDOM
-        .querySelector('[data-action="INCREASE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-              cartItemDOM.querySelector('.cart-item-quantity')
-              .innerText = ++cartItem.quantity;
-
-              cartItemDOM.
-              querySelector('[data-action="DECREASE_ITEM"]')
-              .classList.remove('btn-danger');
-
-               //添加本地存储
-               localStorage.setItem('cart',JSON.stringify(cart));
-            }
-          });
-        });
-
-    
-
-        //减号按钮
-        cartItemDOM.
-        querySelector('[data-action="DECREASE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-              if (cartItem.quantity > 1) {
-                cartItemDOM.querySelector('.cart-item-quantity')
-                .innerText = --cartItem.quantity;
-              } else {
-                cartItemDOM.classList.add('cart-item-remove');
-                //删除dom元素
-                  setTimeout(() => cartItemDOM.remove(), 300);
-                //删除数组里的元素
-                cart = cart.filter(
-                  cartItem => cartItem.name !== product.name
-                  );
-                  addToButtonDOM.innerText = '加入购物车';
-                  addToButtonDOM.disabled = false;
-              }
-
-              if (cartItem.quantity === 1) {
-                cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
-                .classList.add('btn-danger');
-              }
-                //添加本地存储
-                localStorage.setItem('cart',JSON.stringify(cart));
-            }
-          })
-        })
-
-        //删除按钮
-        cartItemDOM.
-        querySelector('[data-action="REMOVE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-                cartItemDOM.classList.add('cart-item-remove');
-                //删除dom元素
-                  setTimeout(() => cartItemDOM.remove(), 300);
-                //删除数组里的元素
-                cart = cart.filter(
-                cartItem => cartItem.name !== product.name);
-
-                //添加本地存储
-                localStorage.setItem('cart',JSON.stringify(cart));
-
-
-                addToButtonDOM.innerText = '加入购物车';
-                addToButtonDOM.disabled = false;
-            }
-          })
-        })
-      }
-    });
+          headleActionButtons(addToButtonsDOM,product);
         }
-      })
+      });
 
   });
 }
@@ -158,124 +181,14 @@ addToButtonsDOM.forEach(addToButtonDOM => {
 
     // 判断购物车
     if (!isInCart){
-      cartDOM.insertAdjacentHTML("beforeend",`
-      <div class="cart-item">
-       <img class="cart-item-image"
-        src="${product.image}"
-        alt="${product.name}">
-      <h3 class="cart-item-name">${product.name}</h3>
-       <h3 class="cart-item-price">${product.price}</h3>
-       <button class="btn btn-primary btn-danger btn-small" 
-       data-action="DECREASE_ITEM">
-        &minus;
-        </button>
-        <h3 class="cart-item-quantity">${product.quantity}</h3>
-        <button class="btn btn-primary btn-small"
-         data-action="INCREASE_ITEM">
-            &plus;
-        </button>
-        <h3 class="cart-item-quantity">1</h3>
-        <button class="btn btn-primary btn-danger btn-small"
-         data-action="REMOVE_ITEM">
-            &times;
-        </button>      
-       </div>
-      `)
-    }
-
+    insertItemDOM(product);
     //将商品加入购物车
     cart.push(product);
 
     //添加本地存储
     localStorage.setItem('cart',JSON.stringify(cart));
+    }
 
-
-    addToButtonDOM.innerText='已加入';
-    addToButtonDOM.disabled= true;
-
-    //拿到商品容器
-    const cartItemsDOM = cartDOM.querySelectorAll(".cart-item");
-    cartItemsDOM.forEach(cartItemDOM => {
-      if (
-        cartItemDOM.querySelector(".cart-item-name").
-         innerHTML === product.name
-       ) {
-
-        //加号按钮
-        cartItemDOM
-        .querySelector('[data-action="INCREASE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-              cartItemDOM.querySelector('.cart-item-quantity')
-              .innerText = ++cartItem.quantity;
-
-              cartItemDOM.
-              querySelector('[data-action="DECREASE_ITEM"]')
-              .classList.remove('btn-danger');
-
-               //添加本地存储
-               localStorage.setItem('cart',JSON.stringify(cart));
-            }
-          });
-        });
-
-    
-
-        //减号按钮
-        cartItemDOM.
-        querySelector('[data-action="DECREASE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-              if (cartItem.quantity > 1) {
-                cartItemDOM.querySelector('.cart-item-quantity')
-                .innerText = --cartItem.quantity;
-              } else {
-                cartItemDOM.classList.add('cart-item-remove');
-                //删除dom元素
-                  setTimeout(() => cartItemDOM.remove(), 300);
-                //删除数组里的元素
-                cart = cart.filter(
-                  cartItem => cartItem.name !== product.name
-                  );
-                  addToButtonDOM.innerText = '加入购物车';
-                  addToButtonDOM.disabled = false;
-              }
-
-              if (cartItem.quantity === 1) {
-                cartItemDOM.querySelector('[data-action="DECREASE_ITEM"]')
-                .classList.add('btn-danger');
-              }
-                //添加本地存储
-                localStorage.setItem('cart',JSON.stringify(cart));
-            }
-          })
-        })
-
-        //删除按钮
-        cartItemDOM.
-        querySelector('[data-action="REMOVE_ITEM"]')
-        .addEventListener("click", () => {
-          cart.forEach(cartItem => {
-            if (cartItem.name === product.name) {
-                cartItemDOM.classList.add('cart-item-remove');
-                //删除dom元素
-                  setTimeout(() => cartItemDOM.remove(), 300);
-                //删除数组里的元素
-                cart = cart.filter(
-                cartItem => cartItem.name !== product.name);
-
-                //添加本地存储
-                localStorage.setItem('cart',JSON.stringify(cart));
-
-
-                addToButtonDOM.innerText = '加入购物车';
-                addToButtonDOM.disabled = false;
-            }
-          })
-        })
-      }
-    });
-  });
+    headleActionButtons(addToButtonDOM,product);
+});
 });
